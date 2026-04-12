@@ -4,11 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://jud1ve4wee6i" path="res://Player/Sprites/PlayerSprite02.png" id="2_vtle1"]
 [ext_resource type="Texture2D" uid="uid://b3sqtbjbpwlbg" path="res://Player/Sprites/AttackSprite01.png" id="3_00tjw"]
 [ext_resource type="Script" uid="uid://b7rqib5gvf7kn" path="res://Player/Scripts/state_machine.gd" id="3_sm"]
+[ext_resource type="Texture2D" uid="uid://qsfkdmlj0bdy" path="res://Player/Sprites/Shadow.png" id="4_apopc"]
 [ext_resource type="Script" uid="uid://c5p5ywmswv6xs" path="res://Player/Scripts/states/idle_state.gd" id="4_idle"]
 [ext_resource type="Script" uid="uid://n2wr3u7d82gd" path="res://Player/Scripts/states/keyboard_move_state.gd" id="5_kb"]
 [ext_resource type="Script" uid="uid://fhvywtyoico7" path="res://Player/Scripts/states/mouse_drag_state.gd" id="6_md"]
 [ext_resource type="Script" uid="uid://bg13v0kgodwsc" path="res://Player/Scripts/states/move_to_point_state.gd" id="7_mtp"]
 [ext_resource type="Script" uid="uid://c6r7i58dlooss" path="res://Player/Scripts/states/attack.gd" id="8_attack"]
+[ext_resource type="AudioStream" uid="uid://dgqyanxf0r7sy" path="res://Player/Audio/SwordSwoosh.wav" id="9_sword"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_edjgo"]
 
@@ -66,7 +68,6 @@ tracks/3/keys = {
 [sub_resource type="Animation" id="Animation_p5o4e"]
 resource_name = "attack_down"
 length = 0.3
-loop_mode = 0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -119,7 +120,6 @@ tracks/3/keys = {
 [sub_resource type="Animation" id="Animation_gu6f8"]
 resource_name = "attack_side"
 length = 0.3
-loop_mode = 0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -154,7 +154,7 @@ tracks/2/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [false]
+"values": [true]
 }
 tracks/3/type = "value"
 tracks/3/imported = false
@@ -172,7 +172,6 @@ tracks/3/keys = {
 [sub_resource type="Animation" id="Animation_dkpta"]
 resource_name = "attack_up"
 length = 0.3
-loop_mode = 0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -195,7 +194,7 @@ tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [false]
+"values": [true]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -210,12 +209,29 @@ tracks/2/keys = {
 "values": [true, false]
 }
 
+[sub_resource type="Animation" id="Animation_lfmf2"]
+resource_name = "no_attack"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lfmf2"]
 _data = {
 &"RESET": SubResource("Animation_5htga"),
 &"attack_down": SubResource("Animation_p5o4e"),
 &"attack_side": SubResource("Animation_gu6f8"),
-&"attack_up": SubResource("Animation_dkpta")
+&"attack_up": SubResource("Animation_dkpta"),
+&"no_attack": SubResource("Animation_lfmf2")
 }
 
 [sub_resource type="Animation" id="Animation_4ntmi"]
@@ -236,7 +252,6 @@ tracks/0/keys = {
 [sub_resource type="Animation" id="Animation_00tjw"]
 resource_name = "attack_down"
 length = 0.3
-loop_mode = 0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -253,7 +268,6 @@ tracks/0/keys = {
 [sub_resource type="Animation" id="Animation_x3vf3"]
 resource_name = "attack_side"
 length = 0.3
-loop_mode = 0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -270,7 +284,6 @@ tracks/0/keys = {
 [sub_resource type="Animation" id="Animation_apopc"]
 resource_name = "attack_up"
 length = 0.3
-loop_mode = 0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -407,19 +420,32 @@ script = ExtResource("2_player")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1462953709]
 shape = SubResource("CircleShape2D_edjgo")
 
+[node name="SwordSwoosh" type="AudioStreamPlayer" parent="." unique_id=433973363]
+stream = ExtResource("9_sword")
+max_polyphony = 4
+
 [node name="PlayerSprite" type="Sprite2D" parent="." unique_id=1096289410]
 position = Vector2(0, -21)
 texture = ExtResource("2_vtle1")
 hframes = 16
 vframes = 3
 
+[node name="Shadow" type="Sprite2D" parent="PlayerSprite" unique_id=809860645]
+modulate = Color(0.23392546, 0.23392546, 0.23392543, 1)
+self_modulate = Color(0.70242256, 0.7024225, 0.7024225, 1)
+show_behind_parent = true
+position = Vector2(0, 21)
+texture = ExtResource("4_apopc")
+
 [node name="AttackSprite" type="Sprite2D" parent="PlayerSprite" unique_id=2000754938]
+visible = false
 position = Vector2(5, -14)
 texture = ExtResource("3_00tjw")
 hframes = 12
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="PlayerSprite/AttackSprite" unique_id=926586589]
 libraries/ = SubResource("AnimationLibrary_lfmf2")
+autoplay = &"no_attack"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2049323386]
 libraries/ = SubResource("AnimationLibrary_gwnis")
