@@ -23,10 +23,6 @@ window/size/window_width_override=1920
 window/size/window_height_override=1080
 window/stretch/mode="viewport"
 
-[dotnet]
-
-project/assembly_name="BloodBound"
-
 [input]
 
 up={
@@ -54,10 +50,6 @@ right={
 
 2d_physics/layer_1="Player"
 2d_physics/layer_5="Walls"
-
-[physics]
-
-3d/physics_engine="Jolt Physics"
 
 [rendering]
 

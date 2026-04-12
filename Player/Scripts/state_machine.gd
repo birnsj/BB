@@ -11,6 +11,8 @@ var player: CharacterBody2D
 
 var _states: Dictionary = {}
 var current: State
+## Key of the active state (e.g. [code]&"idle"[/code]); updated in [method transition_to].
+var current_key: StringName = &""
 
 
 func configure(p: CharacterBody2D) -> void:
@@ -20,6 +22,7 @@ func configure(p: CharacterBody2D) -> void:
 	_register_state_child(p, &"keyboard_move", "KeyboardMove")
 	_register_state_child(p, &"mouse_drag", "MouseDrag")
 	_register_state_child(p, &"move_to_point", "MoveToPoint")
+	_register_state_child(p, &"attack", "Attack")
 	if not _states.has(&"idle"):
 		push_error("StateMachine: failed to register idle state.")
 		return
@@ -50,6 +53,7 @@ func transition_to(next: StringName, payload: Variant = null) -> void:
 		return
 	if current:
 		current.exit()
+	current_key = next
 	current = next_state
 	current.enter(payload)
 	state_changed.emit(next)

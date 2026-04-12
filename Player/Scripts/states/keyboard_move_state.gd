@@ -3,6 +3,9 @@ extends State
 
 
 func physics_update(_delta: float) -> void:
+	if State.is_attack_input_held():
+		state_machine.transition_to(&"attack")
+		return
 	var direction := Input.get_vector("left", "right", "up", "down")
 	if direction.length_squared() > 0.0:
 		player.velocity = direction * StateMachine.MOVE_SPEED

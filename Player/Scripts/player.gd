@@ -36,6 +36,8 @@ func _physics_process(_delta: float) -> void:
 
 
 func _update_animation() -> void:
+	if _state_machine.current_key == &"attack":
+		return
 	var moving := velocity.length_squared() > MOVE_ANIM_EPS2
 	if moving:
 		if absf(velocity.x) > absf(velocity.y):
@@ -54,3 +56,14 @@ func _update_animation() -> void:
 
 	if _anim.current_animation != clip:
 		_anim.play(clip)
+
+
+func play_attack_animation() -> void:
+	var clip := StringName("attack_" + _face)
+	if _face == "side":
+		_sprite.flip_h = _face_side_is_left
+	else:
+		_sprite.flip_h = false
+	# Do not call stop() here: it can emit animation_finished for the idle/walk clip
+	# synchronously and confuse AttackState before the attack animation runs.
+	_anim.play(clip)

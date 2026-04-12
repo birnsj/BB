@@ -5,6 +5,10 @@ var state_machine: StateMachine
 var player: CharacterBody2D
 
 
+static func is_attack_input_held() -> bool:
+	return Input.is_physical_key_pressed(KEY_SPACE) or Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+
+
 func configure(sm: StateMachine, p: CharacterBody2D) -> void:
 	state_machine = sm
 	player = p

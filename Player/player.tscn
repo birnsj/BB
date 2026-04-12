@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://bxoayr0xwebvi"]
 
-[ext_resource type="Texture2D" uid="uid://hdnritsc2dfv" path="res://Player/Sprites/ExamplePlayerSprite.png" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://bdbs4gyt2nn75" path="res://Player/Scripts/player.gd" id="2_player"]
+[ext_resource type="Texture2D" uid="uid://jud1ve4wee6i" path="res://Player/Sprites/PlayerSprite02.png" id="2_vtle1"]
 [ext_resource type="Script" uid="uid://b7rqib5gvf7kn" path="res://Player/Scripts/state_machine.gd" id="3_sm"]
 [ext_resource type="Script" uid="uid://c5p5ywmswv6xs" path="res://Player/Scripts/states/idle_state.gd" id="4_idle"]
 [ext_resource type="Script" uid="uid://n2wr3u7d82gd" path="res://Player/Scripts/states/keyboard_move_state.gd" id="5_kb"]
 [ext_resource type="Script" uid="uid://fhvywtyoico7" path="res://Player/Scripts/states/mouse_drag_state.gd" id="6_md"]
 [ext_resource type="Script" uid="uid://bg13v0kgodwsc" path="res://Player/Scripts/states/move_to_point_state.gd" id="7_mtp"]
+[ext_resource type="Script" uid="uid://c6r7i58dlooss" path="res://Player/Scripts/states/attack.gd" id="8_attack"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_edjgo"]
 
@@ -25,6 +26,54 @@ tracks/0/keys = {
 "values": [0]
 }
 
+[sub_resource type="Animation" id="Animation_00tjw"]
+resource_name = "attack_down"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("PlayerSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [21, 23]
+}
+
+[sub_resource type="Animation" id="Animation_x3vf3"]
+resource_name = "attack_side"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("PlayerSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [27, 29]
+}
+
+[sub_resource type="Animation" id="Animation_apopc"]
+resource_name = "attack_up"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("PlayerSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [24, 26]
+}
+
 [sub_resource type="Animation" id="Animation_btcbx"]
 resource_name = "idle_down"
 length = 0.4
@@ -36,10 +85,10 @@ tracks/0/path = NodePath("PlayerSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 1,
-"values": [0, 1, 2]
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0, 2]
 }
 
 [sub_resource type="Animation" id="Animation_gwnis"]
@@ -53,10 +102,10 @@ tracks/0/path = NodePath("PlayerSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 1,
-"values": [14, 15, 16]
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [6, 8]
 }
 
 [sub_resource type="Animation" id="Animation_k53q1"]
@@ -70,10 +119,10 @@ tracks/0/path = NodePath("PlayerSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.4),
-"transitions": PackedFloat32Array(1, 1, 1),
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [7, 8, 9]
+"values": [3, 5]
 }
 
 [sub_resource type="Animation" id="Animation_fhl08"]
@@ -87,10 +136,10 @@ tracks/0/path = NodePath("PlayerSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 1,
-"values": [3, 4, 5, 6]
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [9, 12]
 }
 
 [sub_resource type="Animation" id="Animation_vtle1"]
@@ -104,10 +153,10 @@ tracks/0/path = NodePath("PlayerSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 1,
-"values": [20, 18, 19, 20]
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [17, 20]
 }
 
 [sub_resource type="Animation" id="Animation_od3ui"]
@@ -121,15 +170,18 @@ tracks/0/path = NodePath("PlayerSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 1,
-"values": [10, 11, 12, 13]
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [13, 16]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_gwnis"]
 _data = {
 &"RESET": SubResource("Animation_4ntmi"),
+&"attack_down": SubResource("Animation_00tjw"),
+&"attack_side": SubResource("Animation_x3vf3"),
+&"attack_up": SubResource("Animation_apopc"),
 &"idle_down": SubResource("Animation_btcbx"),
 &"idle_side": SubResource("Animation_gwnis"),
 &"idle_up": SubResource("Animation_k53q1"),
@@ -147,8 +199,9 @@ shape = SubResource("CircleShape2D_edjgo")
 
 [node name="PlayerSprite" type="Sprite2D" parent="." unique_id=1096289410]
 position = Vector2(0, -21)
-texture = ExtResource("1_4flbx")
-hframes = 21
+texture = ExtResource("2_vtle1")
+hframes = 16
+vframes = 3
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2049323386]
 libraries/ = SubResource("AnimationLibrary_gwnis")
@@ -168,14 +221,15 @@ script = ExtResource("6_md")
 [node name="MoveToPoint" type="Node" parent="StateMachine" unique_id=1406403060]
 script = ExtResource("7_mtp")
 
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("8_attack")
+
 [node name="StateDebugLayer" type="CanvasLayer" parent="." unique_id=292708425]
 layer = 100
 
 [node name="StateLabel" type="Label" parent="StateDebugLayer" unique_id=1257039023]
 offset_left = 8.0
 offset_top = 8.0
-mouse_filter = 2
-focus_mode = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
@@ -183,3 +237,4 @@ theme_override_font_sizes/font_size = 14
 text = "State: idle"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=598452779]
+enabled = true

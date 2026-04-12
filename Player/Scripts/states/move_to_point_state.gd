@@ -15,6 +15,9 @@ func enter(payload: Variant = null) -> void:
 
 
 func physics_update(_delta: float) -> void:
+	if State.is_attack_input_held():
+		state_machine.transition_to(&"attack")
+		return
 	if Input.get_vector("left", "right", "up", "down").length_squared() > 0.0:
 		state_machine.transition_to(&"keyboard_move")
 		return
