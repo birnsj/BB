@@ -4,6 +4,7 @@ extends State
 
 func enter(_payload: Variant = null) -> void:
 	player.velocity = Vector2.ZERO
+	# One swing = one body attack clip; FX follows in play_attack_animation. Finished comes from root player only.
 	var anim_player: AnimationPlayer = player.get_node("AnimationPlayer") as AnimationPlayer
 	var on_finished := Callable(self, "_on_attack_anim_finished")
 	if not anim_player.is_connected("animation_finished", on_finished):
@@ -16,6 +17,7 @@ func exit() -> void:
 	var on_finished := Callable(self, "_on_attack_anim_finished")
 	if anim_player.is_connected("animation_finished", on_finished):
 		anim_player.disconnect("animation_finished", on_finished)
+	player.call("on_attack_state_exit")
 
 
 func physics_update(_delta: float) -> void:
@@ -28,6 +30,8 @@ func _on_attack_anim_finished(anim_name: StringName) -> void:
 	# Switching away from idle/walk can emit finished for the previous clip first.
 	if not String(anim_name).begins_with("attack_"):
 		return
+	# End of body attack clip: hide FX (started once per play_attack_animation) then repeat or leave.
+	player.call("hide_attack_fx")
 	if State.is_attack_input_held():
 		player.call("play_attack_animation")
 	else:
@@ -41,3 +45,5 @@ func _transition_after_attack() -> void:
 		state_machine.transition_to(&"mouse_drag")
 	else:
 		state_machine.transition_to(&"idle")
+	# Root AnimationPlayer still held the last body attack frame; reapply idle/walk now that current_key is updated.
+	player.call("sync_locomotion_animation")

@@ -6,6 +6,8 @@ const MOVE_ANIM_EPS2: float = 4.0
 
 @onready var _anim: AnimationPlayer = $AnimationPlayer
 @onready var _sprite: Sprite2D = $PlayerSprite
+@onready var _attack_sprite: Sprite2D = $PlayerSprite/AttackSprite
+@onready var _attack_sprite_anim: AnimationPlayer = $PlayerSprite/AttackSprite/AnimationPlayer
 @onready var _state_label: Label = $StateDebugLayer/StateLabel
 @onready var _state_machine: StateMachine = $StateMachine
 
@@ -15,6 +17,7 @@ var _face_side_is_left: bool = false
 
 
 func _ready() -> void:
+	_attack_sprite.hide()
 	_state_machine.state_changed.connect(_on_state_changed)
 	_state_machine.configure(self)
 	_anim.play(&"idle_down")
@@ -62,8 +65,27 @@ func play_attack_animation() -> void:
 	var clip := StringName("attack_" + _face)
 	if _face == "side":
 		_sprite.flip_h = _face_side_is_left
+		_attack_sprite.flip_h = _face_side_is_left
 	else:
 		_sprite.flip_h = false
-	# Do not call stop() here: it can emit animation_finished for the idle/walk clip
-	# synchronously and confuse AttackState before the attack animation runs.
+		_attack_sprite.flip_h = false
 	_anim.play(clip)
+	_attack_sprite.show()
+	# FX mirrors the same clip once per swing (no extra seek; loop_mode none on attack_* in scene).
+	_attack_sprite_anim.play(clip)
+
+
+func hide_attack_fx() -> void:
+	# Called when root body attack finishes; FX player is not used for signals (stop won't re-enter attack state).
+	_attack_sprite_anim.stop()
+	_attack_sprite.frame = 0
+	_attack_sprite.visible = false
+	_attack_sprite.hide()
+
+
+func sync_locomotion_animation() -> void:
+	_update_animation()
+
+
+func on_attack_state_exit() -> void:
+	hide_attack_fx()
