@@ -16,6 +16,10 @@ hframes = 16
 vframes = 3
 
 [node name="HitBox" parent="." unique_id=596606564 instance=ExtResource("2_djs60")]
+collision_layer = 0
+collision_mask = 2
+monitorable = true
+monitoring = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=638941757]
 position = Vector2(0, 9)

@@ -3,8 +3,11 @@ extends CharacterBody2D
 ## Movement speed and arrival distance: [member StateMachine.MOVE_SPEED] and [member StateMachine.ARRIVE_DISTANCE].
 ## Treat velocity under this squared length as idle for animation.
 const MOVE_ANIM_EPS2: float = 4.0
+## Bitmask for project physics layer "PlayerHurt" (layer 2): player weapon / attack shape.
+const PLAYER_ATTACK_PHYSICS_LAYER: int = 2
 
 @onready var _anim: AnimationPlayer = $AnimationPlayer
+@onready var _attack_hitbox: Area2D = $AttackHitBox
 @onready var _sprite: Sprite2D = $PlayerSprite
 @onready var _attack_sprite: Sprite2D = $PlayerSprite/AttackSprite
 @onready var _attack_sprite_anim: AnimationPlayer = $PlayerSprite/AttackSprite/AnimationPlayer
@@ -17,6 +20,8 @@ var _face_side_is_left: bool = false
 
 
 func _ready() -> void:
+	_attack_hitbox.add_to_group(&"player_attack")
+	_attack_hitbox.collision_layer = 0
 	_attack_sprite.hide()
 	_state_machine.state_changed.connect(_on_state_changed)
 	_state_machine.configure(self)
@@ -69,6 +74,8 @@ func play_attack_animation() -> void:
 	else:
 		_sprite.flip_h = false
 		_attack_sprite.flip_h = false
+	_update_attack_hitbox_position()
+	_attack_hitbox.collision_layer = PLAYER_ATTACK_PHYSICS_LAYER
 	_anim.play(clip)
 	_attack_sprite.show()
 	# FX mirrors the same clip once per swing (no extra seek; loop_mode none on attack_* in scene).
@@ -77,10 +84,22 @@ func play_attack_animation() -> void:
 
 func hide_attack_fx() -> void:
 	# Called when root body attack finishes; FX player is not used for signals (stop won't re-enter attack state).
+	_attack_hitbox.collision_layer = 0
 	_attack_sprite_anim.stop()
 	_attack_sprite.frame = 0
 	_attack_sprite.visible = false
 	_attack_sprite.hide()
+
+
+func _update_attack_hitbox_position() -> void:
+	match _face:
+		"up":
+			_attack_hitbox.position = Vector2(0, -28)
+		"down":
+			_attack_hitbox.position = Vector2(0, 4)
+		"side":
+			var x := -18.0 if _face_side_is_left else 18.0
+			_attack_hitbox.position = Vector2(x, -10)
 
 
 func sync_locomotion_animation() -> void:

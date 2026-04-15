@@ -426,6 +426,9 @@ _data = {
 &"walk_up": SubResource("Animation_od3ui")
 }
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_atk"]
+size = Vector2(32, 24)
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_p5o4e"]
 
 [node name="Player" type="CharacterBody2D" unique_id=1940917468]
@@ -496,6 +499,14 @@ theme_override_font_sizes/font_size = 14
 text = "State: idle"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=598452779]
+
+[node name="AttackHitBox" type="Area2D" parent="." unique_id=2100000001]
+collision_layer = 0
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitBox" unique_id=2100000002]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_atk")
 
 [node name="HurtBox" parent="." unique_id=2117206928 instance=ExtResource("12_5htga")]
 collision_mask = 256
