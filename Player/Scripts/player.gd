@@ -5,17 +5,9 @@ signal damaged(amount: int)
 ## Movement speed and arrival distance: [member StateMachine.MOVE_SPEED] and [member StateMachine.ARRIVE_DISTANCE].
 ## Treat velocity under this squared length as idle for animation.
 const MOVE_ANIM_EPS2: float = 4.0
-## Bitmask for project physics layer "PlayerHurt" (layer 2): player weapon / attack shape.
-const PLAYER_ATTACK_PHYSICS_LAYER: int = 2
-## Bitmask for [code]PropsInteract[/code] (layer 3): destructible prop hit targets (plants, etc.).
-const PROPS_INTERACT_PHYSICS_LAYER: int = 4
-## Bitmask for project physics layer "Enemy" (layer 9): enemy attack [member HitBox] shapes.
-const ENEMY_ATTACK_PHYSICS_LAYER: int = 256
 
 @onready var _anim: AnimationPlayer = $AnimationPlayer
-@onready var _interaction_host: PlayerInteractionHost = $Interactions
-## Sword / prop overlap — transform stays as placed in the scene (not driven by facing).
-var _attack_hitbox: Area2D
+@onready var _attack_hitbox: PlayerAttackHitbox = $Interactions/HurtBox
 @onready var _sprite: Sprite2D = $PlayerSprite
 @onready var _attack_sprite: Sprite2D = $PlayerSprite/AttackSprite
 @onready var _attack_sprite_anim: AnimationPlayer = $PlayerSprite/AttackSprite/AnimationPlayer
@@ -27,23 +19,14 @@ var _face: String = "down"
 var _face_side_is_left: bool = false
 ## While attacking from movement, hurtbox uses this direction (full diagonal). Cleared when attack FX ends.
 var _hurtbox_dir_override: Vector2 = Vector2.ZERO
-## Dedupe [method Area2D.get_overlapping_areas] hits within one swing (cleared in [method hide_attack_fx]).
-var _prop_hits_this_swing: Dictionary = {}
-## True while any enemy attack shape overlaps the hurtbox (for edge-triggered [signal damaged]).
-var _enemy_attack_overlapping_hurtbox: bool = false
 
 
 func _ready() -> void:
-	_attack_hitbox = _find_attack_hitbox()
-	if _attack_hitbox:
-		_attack_hitbox.add_to_group(&"player_attack")
-		_attack_hitbox.collision_layer = 0
-		_attack_hitbox.collision_mask = 0
 	_attack_sprite.hide()
 	_state_machine.state_changed.connect(_on_state_changed)
 	_state_machine.configure(self)
 	_anim.play(&"idle_down")
-	_interaction_host.sync_hurtbox_to_facing()
+	_attack_hitbox.sync_to_facing()
 
 
 func _on_state_changed(state_key: StringName) -> void:
@@ -67,8 +50,6 @@ func _process(_delta: float) -> void:
 func _physics_process(_delta: float) -> void:
 	_state_machine.physics_update(_delta)
 	move_and_slide()
-	_resolve_prop_attack_hits()
-	_resolve_hurtbox_enemy_hits()
 	# Moving: facing follows velocity on the physics step.
 	if _state_machine.current_key == &"attack":
 		return
@@ -95,7 +76,7 @@ func _refresh_locomotion_animation() -> void:
 	if _anim.current_animation != clip:
 		_anim.play(clip)
 
-	_interaction_host.sync_hurtbox_to_facing()
+	_attack_hitbox.sync_to_facing()
 
 
 func play_attack_animation(velocity_snapshot: Vector2 = Vector2.ZERO) -> void:
@@ -113,10 +94,8 @@ func play_attack_animation(velocity_snapshot: Vector2 = Vector2.ZERO) -> void:
 	else:
 		_sprite.flip_h = false
 		_attack_sprite.flip_h = false
-	_interaction_host.sync_hurtbox_to_facing()
-	if _attack_hitbox:
-		_attack_hitbox.collision_layer = PLAYER_ATTACK_PHYSICS_LAYER
-		_attack_hitbox.collision_mask = PROPS_INTERACT_PHYSICS_LAYER
+	_attack_hitbox.sync_to_facing()
+	_attack_hitbox.enable_for_attack()
 	_anim.play(clip)
 	_attack_sprite.show()
 	# FX mirrors the same clip once per swing (no extra seek; loop_mode none on attack_* in scene).
@@ -125,15 +104,13 @@ func play_attack_animation(velocity_snapshot: Vector2 = Vector2.ZERO) -> void:
 
 func hide_attack_fx() -> void:
 	# Called when root body attack finishes; FX player is not used for signals (stop won't re-enter attack state).
-	_prop_hits_this_swing.clear()
-	_hurtbox_dir_override = Vector2.ZERO
-	if _attack_hitbox:
-		_attack_hitbox.collision_layer = 0
-		_attack_hitbox.collision_mask = 0
+	_attack_hitbox.clear_swing_hits()
+	_attack_hitbox.disable_for_attack()
 	_attack_sprite_anim.stop()
 	_attack_sprite.frame = 0
 	_attack_sprite.visible = false
 	_attack_sprite.hide()
+	_hurtbox_dir_override = Vector2.ZERO
 
 
 func _set_face_from_velocity(v: Vector2) -> void:
@@ -158,72 +135,6 @@ func _set_face_from_cursor() -> void:
 	else:
 		_face = "side"
 		_face_side_is_left = to_mouse.x < 0.0
-
-
-func _find_attack_hitbox() -> Area2D:
-	var n := get_node_or_null("AttackHitBox") as Area2D
-	if n:
-		return n
-	n = get_node_or_null("HitBox") as Area2D
-	if n:
-		return n
-	return find_child("HitBox", true, false) as Area2D
-
-
-func _resolve_prop_attack_hits() -> void:
-	if _state_machine.current_key != &"attack":
-		return
-	if _attack_hitbox == null:
-		return
-	var cs := _attack_hitbox.get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if cs == null or cs.disabled or cs.shape == null:
-		return
-	# Shape query avoids one-frame lag when toggling Area2D layers (get_overlapping_areas can miss).
-	var params := PhysicsShapeQueryParameters2D.new()
-	params.shape = cs.shape
-	params.transform = cs.global_transform
-	params.collide_with_areas = true
-	params.collide_with_bodies = false
-	params.collision_mask = PROPS_INTERACT_PHYSICS_LAYER
-	var space := get_world_2d().direct_space_state
-	var hits: Array = space.intersect_shape(params, 32)
-	for hit: Variant in hits:
-		var d: Dictionary = hit
-		var collider: Object = d.get("collider")
-		if collider == null or not (collider is Area2D):
-			continue
-		var area := collider as Area2D
-		if not area.is_in_group(&"plant_prop_hit"):
-			continue
-		var rid: int = area.get_instance_id()
-		if _prop_hits_this_swing.has(rid):
-			continue
-		_prop_hits_this_swing[rid] = true
-		var prop := area.get_parent()
-		if prop and is_instance_valid(prop):
-			prop.queue_free()
-
-
-func _resolve_hurtbox_enemy_hits() -> void:
-	## Uses the same world [CollisionShape2D] as [member HurtBox] so hits match what you see in the debugger.
-	var hb := get_node_or_null("Interactions/HurtBox") as Area2D
-	if hb == null:
-		return
-	var cs := hb.get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if cs == null or cs.disabled or cs.shape == null:
-		return
-	var params := PhysicsShapeQueryParameters2D.new()
-	params.shape = cs.shape
-	params.transform = cs.global_transform
-	params.collide_with_areas = true
-	params.collide_with_bodies = false
-	params.collision_mask = ENEMY_ATTACK_PHYSICS_LAYER
-	var space := get_world_2d().direct_space_state
-	var hits: Array = space.intersect_shape(params, 16)
-	var touching := not hits.is_empty()
-	if touching and not _enemy_attack_overlapping_hurtbox:
-		damaged.emit(1)
-	_enemy_attack_overlapping_hurtbox = touching
 
 
 func sync_locomotion_animation() -> void:
