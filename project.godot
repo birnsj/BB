@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 CharacterTunerOverlay="*res://UI/character_tuner_overlay.tscn"
+NpcDialog="*res://UI/npc_dialog.tscn"
 DebugCollisionToggle="*res://Scripts/debug_collision_toggle.gd"
 
 [display]
@@ -101,6 +102,7 @@ debug_collision_shapes={
 2d_physics/layer_1="Player"
 2d_physics/layer_2="PlayerHurt"
 2d_physics/layer_3="PropsInteract"
+2d_physics/layer_7="NpcInteract"
 2d_physics/layer_6="SolidActor"
 2d_physics/layer_5="Walls"
 2d_physics/layer_9="Enemy"

@@ -34,7 +34,11 @@ func _commit_lmb_release() -> void:
 	var moved_screen := _press_screen.distance_to(_release_screen)
 	var elapsed := Time.get_ticks_msec() - _press_time_ms
 	if elapsed < click_max_duration_ms and moved_screen < click_max_move_px:
-		state_machine.transition_to(&"move_to_point", release_world)
+		var space := player.get_world_2d().direct_space_state
+		if PlayerAreaUtils.world_point_blocks_move_to_point(release_world, space):
+			state_machine.transition_to(&"idle")
+		else:
+			state_machine.transition_to(&"move_to_point", release_world)
 	else:
 		state_machine.transition_to(&"idle")
 

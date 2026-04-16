@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://d1twy5su6hkto"]
+
+[ext_resource type="Script" uid="uid://b7npcdlg01abc" path="res://UI/npc_dialog.gd" id="1_script"]
+
+[node name="NpcDialog" type="CanvasLayer"]
+layer = 130
+process_mode = 3
+script = ExtResource("1_script")
+
+[node name="RootLayout" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+focus_mode = 2
+
+[node name="Center" type="CenterContainer" parent="RootLayout"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="RootLayout/Center"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="RootLayout/Center/Panel"]
+layout_mode = 2
+
+[node name="HelloLabel" type="Label" parent="RootLayout/Center/Panel/VBox"]
+layout_mode = 2
+text = "Hello"
+horizontal_alignment = 1
+
+[node name="GoodbyeBtn" type="Button" parent="RootLayout/Center/Panel/VBox"]
+layout_mode = 2
+text = "Goodbye"
