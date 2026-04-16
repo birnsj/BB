@@ -3,6 +3,7 @@ extends State
 
 
 func physics_update(_delta: float) -> void:
+	state_machine.update_mouse_drag_ghost_suppression()
 	if State.is_attack_input_held():
 		state_machine.transition_to(&"attack")
 		return
@@ -10,7 +11,10 @@ func physics_update(_delta: float) -> void:
 	if direction.length_squared() > 0.0:
 		player.velocity = direction * StateMachine.MOVE_SPEED
 	else:
-		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		if (
+			not state_machine.ignore_mouse_drag_until_lmb_up
+			and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+		):
 			state_machine.transition_to(&"mouse_drag")
 		else:
 			state_machine.transition_to(&"idle")

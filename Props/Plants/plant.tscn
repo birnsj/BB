@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b26ldd28ruypg" path="res://Props/Plants/plant.gd" id="1_djs60"]
 [ext_resource type="Texture2D" uid="uid://bx2356yf07qf0" path="res://Props/Sprites/Props.png" id="1_qsug5"]
 [ext_resource type="PackedScene" uid="uid://qnohs3nj52c8" path="res://GeneralNodes/HitBox/hit_box.tscn" id="2_djs60"]
-[ext_resource type="Script" uid="uid://dm9wf3h2k7qx1" path="res://Props/Plants/plant_hit_box.gd" id="3_plhit"]
+[ext_resource type="Script" uid="uid://dnawf3h2k7qx1" path="res://Props/Plants/plant_hit_box.gd" id="3_plhit"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0y2q1"]
 size = Vector2(40, 19)
@@ -17,11 +17,10 @@ hframes = 16
 vframes = 3
 
 [node name="HitBox" parent="." unique_id=596606564 instance=ExtResource("2_djs60")]
-script = ExtResource("3_plhit")
 collision_layer = 4
 collision_mask = 2
-monitorable = true
 monitoring = true
+script = ExtResource("3_plhit")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=638941757]
 position = Vector2(0, 8)

@@ -14,6 +14,33 @@ var current: State
 ## Key of the active state (e.g. [code]&"idle"[/code]); updated in [method transition_to].
 var current_key: StringName = &""
 
+var _last_physics_delta: float = 1.0 / 60.0
+
+## After click-to-move, polled LMB can flicker; require several consecutive physics ticks with LMB up before drag is allowed again.
+const MOUSE_DRAG_LMB_UP_STREAK_REQUIRED: int = 6
+
+## After click-to-move, [method Input.is_mouse_button_pressed] can stay true for many ticks; don't treat as LMB drag until the streak clears.
+var ignore_mouse_drag_until_lmb_up: bool = false
+var _mouse_drag_lmb_up_streak: int = 0
+
+
+func update_mouse_drag_ghost_suppression() -> void:
+	if not ignore_mouse_drag_until_lmb_up:
+		_mouse_drag_lmb_up_streak = 0
+		return
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_mouse_drag_lmb_up_streak = 0
+		return
+	_mouse_drag_lmb_up_streak += 1
+	if _mouse_drag_lmb_up_streak >= MOUSE_DRAG_LMB_UP_STREAK_REQUIRED:
+		ignore_mouse_drag_until_lmb_up = false
+		_mouse_drag_lmb_up_streak = 0
+
+
+func arm_mouse_drag_ghost_suppression() -> void:
+	ignore_mouse_drag_until_lmb_up = true
+	_mouse_drag_lmb_up_streak = 0
+
 
 func configure(p: CharacterBody2D) -> void:
 	player = p
@@ -50,6 +77,9 @@ func transition_to(next: StringName, payload: Variant = null) -> void:
 		push_error("Unknown state: %s" % String(next))
 		return
 	if current == next_state:
+		# Allow a new click destination while already walking (otherwise transition_to no-ops).
+		if next == &"move_to_point" and payload is Vector2:
+			current.enter(payload)
 		return
 	if current:
 		current.exit()
@@ -60,10 +90,24 @@ func transition_to(next: StringName, payload: Variant = null) -> void:
 
 
 func physics_update(delta: float) -> void:
-	if current:
+	if current == null:
+		return
+	_last_physics_delta = delta
+	## If [method transition_to] runs inside [method State.physics_update], the new state would not run until next frame; run it once so velocity/movement apply immediately.
+	var key_before := current_key
+	current.physics_update(delta)
+	if current_key != key_before:
 		current.physics_update(delta)
 
 
 func handle_input(event: InputEvent) -> void:
-	if current:
-		current.handle_input(event)
+	if current == null:
+		return
+	## Mouse / UI transitions often happen in [method Node._input] before [method Node._physics_process]; run the new state's physics once so velocity updates same frame as LMB (mirrors logic in [method physics_update]).
+	var key_before := current_key
+	current.handle_input(event)
+	if current_key != key_before:
+		var d: float = _last_physics_delta
+		if d <= 0.0:
+			d = 1.0 / float(Engine.physics_ticks_per_second)
+		current.physics_update(d)

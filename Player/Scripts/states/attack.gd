@@ -46,9 +46,13 @@ func _on_attack_anim_finished(anim_name: StringName) -> void:
 
 
 func _transition_after_attack() -> void:
+	state_machine.update_mouse_drag_ghost_suppression()
 	if Input.get_vector("left", "right", "up", "down").length_squared() > 0.0:
 		state_machine.transition_to(&"keyboard_move")
-	elif Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+	elif (
+		not state_machine.ignore_mouse_drag_until_lmb_up
+		and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	):
 		state_machine.transition_to(&"mouse_drag")
 	else:
 		state_machine.transition_to(&"idle")

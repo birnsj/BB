@@ -7,6 +7,37 @@ signal damaged(amount: int)
 ## Treat velocity under this squared length as idle for animation.
 const MOVE_ANIM_EPS2: float = 4.0
 
+## Cursor in world space. Projects through the active game camera (required when the camera is a separate rig with pan/lag).
+func get_world_mouse() -> Vector2:
+	var vp := get_viewport()
+	var cam := _game_camera()
+	if cam != null and cam.has_method(&"viewport_px_to_world"):
+		return cam.viewport_px_to_world(vp.get_mouse_position())
+	if cam != null:
+		return cam.get_global_mouse_position()
+	return vp.get_canvas_transform().affine_inverse() * vp.get_mouse_position()
+
+
+func viewport_px_to_world(px: Vector2) -> Vector2:
+	var cam := _game_camera()
+	if cam != null and cam.has_method(&"viewport_px_to_world"):
+		return cam.viewport_px_to_world(px)
+	var vp := get_viewport()
+	return vp.get_canvas_transform().affine_inverse() * px
+
+
+func request_camera_walk_start_recenter() -> void:
+	var cam := _game_camera()
+	if cam and cam.has_method(&"request_walk_start_recenter"):
+		cam.request_walk_start_recenter()
+
+
+func _game_camera() -> Camera2D:
+	if _camera != null and is_instance_valid(_camera):
+		return _camera
+	_camera = get_tree().get_first_node_in_group(&"game_camera") as Camera2D
+	return _camera
+
 @onready var _anim: AnimationPlayer = $AnimationPlayer
 @onready var _attack_hitbox: PlayerAttackHitbox = $Interactions/AttackBox
 @onready var _sprite: Sprite2D = $PlayerSprite
@@ -14,6 +45,7 @@ const MOVE_ANIM_EPS2: float = 4.0
 @onready var _attack_sprite_anim: AnimationPlayer = $PlayerSprite/AttackSprite/AnimationPlayer
 @onready var _state_label: Label = $StateDebugLayer/StateLabel
 @onready var _state_machine: StateMachine = $StateMachine
+var _camera: Camera2D
 
 ## Last facing for idle: "up", "down", or "side" (left/right via flip_h).
 var _face: String = "down"
@@ -28,6 +60,11 @@ func _ready() -> void:
 	_state_machine.configure(self)
 	_anim.play(&"idle_down")
 	_attack_hitbox.sync_to_facing()
+	call_deferred(&"_bind_game_camera")
+
+
+func _bind_game_camera() -> void:
+	_camera = get_tree().get_first_node_in_group(&"game_camera") as Camera2D
 
 
 func _on_state_changed(state_key: StringName) -> void:
@@ -127,7 +164,7 @@ func _set_face_from_velocity(v: Vector2) -> void:
 
 
 func _set_face_from_cursor() -> void:
-	var to_mouse := get_global_mouse_position() - global_position
+	var to_mouse := get_world_mouse() - global_position
 	if absf(to_mouse.y) >= absf(to_mouse.x):
 		if to_mouse.y < 0.0:
 			_face = "up"
@@ -155,7 +192,7 @@ func get_attack_aim_direction() -> Vector2:
 		return _attack_aim_override
 	if velocity.length_squared() > MOVE_ANIM_EPS2:
 		return velocity.normalized()
-	var to_mouse := get_global_mouse_position() - global_position
+	var to_mouse := get_world_mouse() - global_position
 	if to_mouse.length_squared() > 1.0:
 		return to_mouse.normalized()
 	return _direction_from_face()
