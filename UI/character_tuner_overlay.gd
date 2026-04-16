@@ -154,7 +154,7 @@ func _process(_delta: float) -> void:
 
 func _update_pause_for_panel_hover() -> void:
 	if not _overlay_open:
-		# Do not clear [member SceneTree.paused] here — other UI (e.g. NpcDialog) may require pause.
+		# Do not clear [member SceneTree.paused] here — other UI may require pause.
 		return
 	var mp := get_viewport().get_mouse_position()
 	get_tree().paused = _panel.get_global_rect().has_point(mp)

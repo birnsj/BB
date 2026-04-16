@@ -1,5 +1,5 @@
 ## Central registry for in-game tuning targets. V1: register [code]&"player"[/code] from [method Player._ready].
-## Later: enemies/NPCs call [method register] with their own [Callable] that applies a [CharacterTuningProfile].
+## Later: other actors can call [method register] with their own [Callable] that applies a [CharacterTuningProfile].
 class_name TuningRegistry
 extends RefCounted
 

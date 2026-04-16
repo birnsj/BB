@@ -4,16 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://bwvs0b0lvjfi5" path="res://Tilemaps/Grass-01.tscn" id="2_wt17y"]
 [ext_resource type="PackedScene" uid="uid://cjrn3y4nimx5h" path="res://Props/Plants/plant.tscn" id="4_is3ju"]
 [ext_resource type="PackedScene" path="res://Player/camera_rig.tscn" id="5_camrig"]
-[ext_resource type="PackedScene" path="res://Player/visual_npc.tscn" id="6_visualnpc"]
 
 [node name="Playground" type="Node2D" unique_id=713373453]
 y_sort_enabled = true
 
 [node name="Player" parent="." unique_id=1940917468 instance=ExtResource("1_rupst")]
 position = Vector2(233, 134)
-
-[node name="VisualNpc" parent="." unique_id=-1454773449 instance=ExtResource("6_visualnpc")]
-position = Vector2(300, 134)
 
 [node name="CameraRig" parent="." unique_id=598452780 instance=ExtResource("5_camrig")]
 follow_target = NodePath("../Player")
