@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bctunerovrlay02"]
+
+[ext_resource type="Script" path="res://UI/character_tuner_overlay.gd" id="1_script"]
+
+[node name="CharacterTunerOverlay" type="CanvasLayer"]
+layer = 128
+script = ExtResource("1_script")

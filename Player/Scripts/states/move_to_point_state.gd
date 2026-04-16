@@ -2,11 +2,14 @@ class_name MoveToPointState
 extends State
 
 var _target: Vector2 = Vector2.ZERO
+## [method Player.global_position] to [member _target] distance at click commit (drives speed boost for long moves).
+var _click_commit_distance: float = 0.0
 
 
 func enter(payload: Variant = null) -> void:
 	if payload is Vector2:
 		_target = payload
+		_click_commit_distance = player.global_position.distance_to(_target)
 		state_machine.arm_mouse_drag_ghost_suppression()
 		(player as Player).request_camera_walk_start_recenter()
 		return
@@ -32,8 +35,13 @@ func physics_update(_delta: float) -> void:
 		return
 
 	var to_point := _target - player.global_position
-	if to_point.length() < StateMachine.ARRIVE_DISTANCE:
+	if to_point.length() < state_machine.arrive_distance:
 		player.velocity = Vector2.ZERO
 		state_machine.transition_to(&"idle")
 	else:
-		player.velocity = to_point.normalized() * StateMachine.MOVE_SPEED
+		var d := to_point.length()
+		var blend := maxf(state_machine.move_to_point_speed_blend_distance, 1.0)
+		var t_far := clampf(_click_commit_distance / blend, 0.0, 1.0)
+		var mul_far := lerpf(1.0, state_machine.move_to_point_far_speed_multiplier, t_far)
+		var mul_arrive := state_machine.arrival_slow_multiplier(d)
+		player.velocity = to_point.normalized() * state_machine.move_speed * mul_far * mul_arrive

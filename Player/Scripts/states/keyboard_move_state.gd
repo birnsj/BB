@@ -9,7 +9,7 @@ func physics_update(_delta: float) -> void:
 		return
 	var direction := Input.get_vector("left", "right", "up", "down")
 	if direction.length_squared() > 0.0:
-		player.velocity = direction * StateMachine.MOVE_SPEED
+		player.velocity = direction * state_machine.move_speed
 	else:
 		if (
 			not state_machine.ignore_mouse_drag_until_lmb_up

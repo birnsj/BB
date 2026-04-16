@@ -3,9 +3,11 @@ extends CharacterBody2D
 
 signal damaged(amount: int)
 
-## Movement speed and arrival distance: [member StateMachine.MOVE_SPEED] and [member StateMachine.ARRIVE_DISTANCE].
-## Treat velocity under this squared length as idle for animation.
-const MOVE_ANIM_EPS2: float = 4.0
+## Movement speed and arrival distance: [member StateMachine.move_speed] and [member StateMachine.arrive_distance].
+## Treat velocity under this squared length as idle for animation ([CharacterTuningProfile.move_anim_eps2]).
+var move_anim_eps2: float = 4.0
+## In facing logic, vertical wins when [code]absf(y) >= absf(x) * facing_vertical_bias[/code] (1.0 matches legacy behavior).
+var facing_vertical_bias: float = 1.0
 
 ## Cursor in world space. Projects through the active game camera (required when the camera is a separate rig with pan/lag).
 func get_world_mouse() -> Vector2:
@@ -61,10 +63,21 @@ func _ready() -> void:
 	_anim.play(&"idle_down")
 	_attack_hitbox.sync_to_facing()
 	call_deferred(&"_bind_game_camera")
+	call_deferred(&"_register_tuning_target")
 
 
 func _bind_game_camera() -> void:
 	_camera = get_tree().get_first_node_in_group(&"game_camera") as Camera2D
+
+
+func _register_tuning_target() -> void:
+	TuningRegistry.register(&"player", _apply_tuning_profile)
+	var defaults := CharacterTuningProfile.new()
+	PlayerTuningApplier.apply(self, defaults)
+
+
+func _apply_tuning_profile(profile: CharacterTuningProfile) -> void:
+	PlayerTuningApplier.apply(self, profile)
 
 
 func _on_state_changed(state_key: StringName) -> void:
@@ -80,7 +93,7 @@ func _process(_delta: float) -> void:
 	# Idle + cursor facing: refresh every rendered frame (not only physics ticks) so turning tracks the mouse faster.
 	if _state_machine.current_key == &"attack":
 		return
-	if velocity.length_squared() > MOVE_ANIM_EPS2:
+	if velocity.length_squared() > move_anim_eps2:
 		return
 	_refresh_locomotion_animation()
 
@@ -91,7 +104,7 @@ func _physics_process(_delta: float) -> void:
 	# Moving: facing follows velocity on the physics step.
 	if _state_machine.current_key == &"attack":
 		return
-	if velocity.length_squared() <= MOVE_ANIM_EPS2:
+	if velocity.length_squared() <= move_anim_eps2:
 		return
 	_refresh_locomotion_animation()
 
@@ -99,7 +112,7 @@ func _physics_process(_delta: float) -> void:
 func _refresh_locomotion_animation() -> void:
 	if _state_machine.current_key == &"attack":
 		return
-	var moving := velocity.length_squared() > MOVE_ANIM_EPS2
+	var moving := velocity.length_squared() > move_anim_eps2
 	if moving:
 		_set_face_from_velocity(velocity)
 	else:
@@ -118,7 +131,7 @@ func _refresh_locomotion_animation() -> void:
 
 
 func play_attack_animation(velocity_snapshot: Vector2 = Vector2.ZERO) -> void:
-	if velocity_snapshot.length_squared() > MOVE_ANIM_EPS2:
+	if velocity_snapshot.length_squared() > move_anim_eps2:
 		_set_face_from_velocity(velocity_snapshot)
 		_attack_aim_override = velocity_snapshot.normalized()
 	else:
@@ -153,7 +166,7 @@ func hide_attack_fx() -> void:
 
 func _set_face_from_velocity(v: Vector2) -> void:
 	# Prefer vertical when |vy| >= |vx| so moving up/down (including diagonals) uses up/down facing.
-	if absf(v.y) >= absf(v.x):
+	if absf(v.y) >= absf(v.x) * facing_vertical_bias:
 		if v.y < 0.0:
 			_face = "up"
 		else:
@@ -165,7 +178,7 @@ func _set_face_from_velocity(v: Vector2) -> void:
 
 func _set_face_from_cursor() -> void:
 	var to_mouse := get_world_mouse() - global_position
-	if absf(to_mouse.y) >= absf(to_mouse.x):
+	if absf(to_mouse.y) >= absf(to_mouse.x) * facing_vertical_bias:
 		if to_mouse.y < 0.0:
 			_face = "up"
 		else:
@@ -190,7 +203,7 @@ func is_facing_side_left() -> bool:
 func get_attack_aim_direction() -> Vector2:
 	if _attack_aim_override.length_squared() > 0.0001:
 		return _attack_aim_override
-	if velocity.length_squared() > MOVE_ANIM_EPS2:
+	if velocity.length_squared() > move_anim_eps2:
 		return velocity.normalized()
 	var to_mouse := get_world_mouse() - global_position
 	if to_mouse.length_squared() > 1.0:

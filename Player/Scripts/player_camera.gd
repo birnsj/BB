@@ -1,10 +1,17 @@
 extends Camera2D
 
 ## WASD pans the view relative to the player ([member position] in the player's local space). Arrow keys move the player.
+## Mouse near the viewport edge pans like RTS games ([member edge_scroll_enabled], [member edge_scroll_margin_px]).
 ## [kbd]Space[/kbd] and walk start both use the same smooth recenter ([member recenter_duration]) toward the player.
 ## Pan range: [member pan_limit_half_screens] viewport half-widths/heights each way (4 screens total span).
 
 @export var pan_speed: float = 220.0
+## When [code]true[/code], moving the cursor within [member edge_scroll_margin_px] of the window edge pans the camera (same axes as [code]cam_pan_*[/code]).
+@export var edge_scroll_enabled: bool = true
+## Viewport pixels from each edge where edge scrolling ramps from 0 to full ([member edge_scroll_speed_scale]).
+@export var edge_scroll_margin_px: float = 36.0
+## Multiplier for the edge-scroll component (keyboard pan uses [member pan_speed] as-is).
+@export var edge_scroll_speed_scale: float = 1.0
 @export var recenter_duration: float = 0.45
 ## Max offset from the player along each axis, in multiples of the base viewport size (480×270). 2 = ±2 screens = 4 screens total width/height.
 @export var pan_limit_half_screens: float = 2.0
@@ -12,6 +19,8 @@ extends Camera2D
 @export var player_move_eps2: float = 4.0
 ## Hold-drag: recenter only after this many consecutive physics ticks with movement (avoids yanking the view on a quick tap while panned).
 @export var mouse_drag_recenter_sustain_ticks: int = 4
+## If [code]false[/code], movement no longer triggers smooth recenter; Space / [code]camera_recenter[/code] still recenter.
+@export var recenter_on_movement: bool = true
 
 var _recenter_tween: Tween
 var _player_was_moving: bool = false
@@ -83,11 +92,16 @@ func _physics_process(_delta: float) -> void:
 
 	# Keyboard (and any non-mouse state): classic walk-start recenter.
 	var skip_velocity_edge := k == &"mouse_drag" or k == &"move_to_point"
-	if moving and not _player_was_moving and not skip_velocity_edge:
+	if (
+		recenter_on_movement
+		and moving
+		and not _player_was_moving
+		and not skip_velocity_edge
+	):
 		_start_recenter_tween()
 
 	# Hold LMB drag: recenter after sustained movement so quick taps stay clean when panned.
-	if k == &"mouse_drag":
+	if k == &"mouse_drag" and recenter_on_movement:
 		if moving:
 			_mouse_drag_moving_ticks += 1
 		else:
@@ -127,13 +141,20 @@ func _try_recenter_from_key_event(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	var pan := Input.get_vector(&"cam_pan_left", &"cam_pan_right", &"cam_pan_up", &"cam_pan_down")
+	var kb := Input.get_vector(&"cam_pan_left", &"cam_pan_right", &"cam_pan_up", &"cam_pan_down")
+	var edge := Vector2.ZERO
+	if edge_scroll_enabled:
+		var vp := get_viewport()
+		var vsize := vp.get_visible_rect().size
+		var mouse := vp.get_mouse_position()
+		edge = _edge_scroll_vector_clamped(mouse, vsize) * edge_scroll_speed_scale
+	var pan := kb + edge
 	if pan.length_squared() <= 0.0001:
 		if _pan_limit_label:
 			_pan_limit_label.visible = false
 		return
 	_kill_recenter_tween_if_running()
-	var move := pan.normalized() * pan_speed * delta
+	var move := pan.limit_length(1.0) * pan_speed * delta
 	var intended := position + move
 	var half := _viewport_half_extent()
 	var clamped := _clamp_position_to_limit(intended)
@@ -143,8 +164,31 @@ func _process(delta: float) -> void:
 		_pan_limit_label.visible = hit_limit
 
 
+## Returns a vector in the same space as [method Input.get_vector] for [code]cam_pan_*[/code] (each axis roughly [code]-1…1[/code]).
+func _edge_scroll_vector_clamped(mouse: Vector2, vsize: Vector2) -> Vector2:
+	if vsize.x < 2.0 or vsize.y < 2.0:
+		return Vector2.ZERO
+	var m := maxf(edge_scroll_margin_px, 1.0)
+	m = minf(m, minf(vsize.x, vsize.y) * 0.45)
+	var mx := clampf(mouse.x, 0.0, vsize.x)
+	var my := clampf(mouse.y, 0.0, vsize.y)
+	var vx := 0.0
+	var vy := 0.0
+	if mx < m:
+		vx = lerpf(-1.0, 0.0, mx / m)
+	elif mx > vsize.x - m:
+		vx = lerpf(0.0, 1.0, (mx - (vsize.x - m)) / m)
+	if my < m:
+		vy = lerpf(-1.0, 0.0, my / m)
+	elif my > vsize.y - m:
+		vy = lerpf(0.0, 1.0, (my - (vsize.y - m)) / m)
+	return Vector2(vx, vy)
+
+
 ## Called when click-to-move commits a destination (always runs, even if drag already had velocity).
 func request_walk_start_recenter() -> void:
+	if not recenter_on_movement:
+		return
 	_start_recenter_tween()
 
 

@@ -1,8 +1,8 @@
 class_name PlayerAttackHitbox
 extends Area2D
 
-const ATTACK_OFFSET_BASE: float = 12.0
-const ATTACK_OFFSET_NORTH_EXTRA: float = 14.0
+var attack_offset_base: float = 12.0
+var attack_offset_north_extra: float = 14.0
 
 var _player: CharacterBody2D
 var _state_machine: StateMachine
@@ -32,7 +32,9 @@ func sync_to_facing() -> void:
 		dir = dir.normalized()
 
 	var northness: float = clampf(-dir.y, 0.0, 1.0)
-	var dist: float = lerpf(ATTACK_OFFSET_BASE, ATTACK_OFFSET_BASE + ATTACK_OFFSET_NORTH_EXTRA, northness)
+	var dist: float = lerpf(
+		attack_offset_base, attack_offset_base + attack_offset_north_extra, northness
+	)
 	position = dir * dist
 
 
