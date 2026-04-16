@@ -15,7 +15,7 @@ func enter(_payload: Variant = null) -> void:
 	if not anim_player.is_connected("animation_finished", on_finished):
 		anim_player.connect("animation_finished", on_finished)
 	_play_swing_sound()
-	player.call("play_attack_animation", velocity_snapshot)
+	(player as Player).play_attack_animation(velocity_snapshot)
 
 
 func exit() -> void:
@@ -23,7 +23,7 @@ func exit() -> void:
 	var on_finished := Callable(self, "_on_attack_anim_finished")
 	if anim_player.is_connected("animation_finished", on_finished):
 		anim_player.disconnect("animation_finished", on_finished)
-	player.call("on_attack_state_exit")
+	(player as Player).on_attack_state_exit()
 
 
 func physics_update(_delta: float) -> void:
@@ -37,10 +37,10 @@ func _on_attack_anim_finished(anim_name: StringName) -> void:
 	if not String(anim_name).begins_with("attack_"):
 		return
 	# End of body attack clip: hide FX (started once per play_attack_animation) then repeat or leave.
-	player.call("hide_attack_fx")
+	(player as Player).hide_attack_fx()
 	if State.is_attack_input_held():
 		_play_swing_sound()
-		player.call("play_attack_animation")
+		(player as Player).play_attack_animation()
 	else:
 		_transition_after_attack()
 
@@ -53,7 +53,7 @@ func _transition_after_attack() -> void:
 	else:
 		state_machine.transition_to(&"idle")
 	# Root AnimationPlayer still held the last body attack frame; reapply idle/walk now that current_key is updated.
-	player.call("sync_locomotion_animation")
+	(player as Player).sync_locomotion_animation()
 
 
 func _play_swing_sound() -> void:

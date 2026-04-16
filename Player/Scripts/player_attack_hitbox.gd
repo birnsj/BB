@@ -1,8 +1,6 @@
 class_name PlayerAttackHitbox
 extends Area2D
 
-const PLAYER_ATTACK_PHYSICS_LAYER: int = 2
-const PROPS_INTERACT_PHYSICS_LAYER: int = 4
 const ATTACK_OFFSET_BASE: float = 12.0
 const ATTACK_OFFSET_NORTH_EXTRA: float = 14.0
 
@@ -13,29 +11,21 @@ var _swing_hits: Dictionary = {}
 
 func _ready() -> void:
 	add_to_group(&"player_attack")
-	collision_layer = 0
-	collision_mask = 0
-	_player = _resolve_player()
+	_player = PlayerAreaUtils.character_from_area_parent(self)
 	if _player:
 		_state_machine = _player.get_node("StateMachine") as StateMachine
 
 
-func _resolve_player() -> CharacterBody2D:
-	var p := get_parent()
-	if p is CharacterBody2D:
-		return p as CharacterBody2D
-	if p:
-		return p.get_parent() as CharacterBody2D
-	return null
-
-
 func sync_to_facing() -> void:
 	if _player == null:
-		_player = _resolve_player()
-	if _player == null or not _player.has_method(&"get_hurtbox_direction"):
+		_player = PlayerAreaUtils.character_from_area_parent(self)
+	if _player == null:
+		return
+	var aim_player := _player as Player
+	if aim_player == null:
 		return
 
-	var dir: Vector2 = _player.call(&"get_hurtbox_direction")
+	var dir: Vector2 = aim_player.get_attack_aim_direction()
 	if dir.length_squared() < 0.0001:
 		dir = Vector2(0, 1)
 	else:
@@ -51,18 +41,20 @@ func clear_swing_hits() -> void:
 
 
 func enable_for_attack() -> void:
-	collision_layer = PLAYER_ATTACK_PHYSICS_LAYER
-	collision_mask = PROPS_INTERACT_PHYSICS_LAYER
+	var cs := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if cs:
+		cs.disabled = false
 
 
 func disable_for_attack() -> void:
-	collision_layer = 0
-	collision_mask = 0
+	var cs := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if cs:
+		cs.disabled = true
 
 
 func _physics_process(_delta: float) -> void:
 	if _player == null:
-		_player = _resolve_player()
+		_player = PlayerAreaUtils.character_from_area_parent(self)
 	if _state_machine == null and _player:
 		_state_machine = _player.get_node("StateMachine") as StateMachine
 	if _state_machine == null or _state_machine.current_key != &"attack":
@@ -79,7 +71,7 @@ func _physics_process(_delta: float) -> void:
 	params.transform = cs.global_transform
 	params.collide_with_areas = true
 	params.collide_with_bodies = false
-	params.collision_mask = PROPS_INTERACT_PHYSICS_LAYER
+	params.collision_mask = collision_mask
 	var space := get_world_2d().direct_space_state
 	var hits: Array = space.intersect_shape(params, 32)
 	for hit: Variant in hits:

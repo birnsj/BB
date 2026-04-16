@@ -504,7 +504,7 @@ text = "State: idle"
 
 [node name="HitBox" type="Area2D" parent="." unique_id=2100000001]
 collision_layer = 0
-collision_mask = 0
+collision_mask = 256
 script = ExtResource("14_phurt")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=2100000002]
@@ -514,12 +514,14 @@ debug_color = Color(0.20392157, 0.5686275, 0.85882354, 0.41960785)
 
 [node name="Interactions" type="Node2D" parent="." unique_id=2021529585]
 
-[node name="HurtBox" parent="Interactions" unique_id=2117206928 instance=ExtResource("12_5htga")]
-collision_mask = 256
+[node name="AttackBox" parent="Interactions" unique_id=2117206928 instance=ExtResource("12_5htga")]
+collision_layer = 2
+collision_mask = 4
 monitorable = true
 script = ExtResource("15_patk")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactions/HurtBox" unique_id=1363667803]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactions/AttackBox" unique_id=1363667803]
+disabled = true
 scale = Vector2(2, 2)
 shape = SubResource("CircleShape2D_p5o4e")
 debug_color = Color(0.9979289, 0, 0.16526431, 0.41960785)

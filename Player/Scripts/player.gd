@@ -1,3 +1,4 @@
+class_name Player
 extends CharacterBody2D
 
 signal damaged(amount: int)
@@ -7,7 +8,7 @@ signal damaged(amount: int)
 const MOVE_ANIM_EPS2: float = 4.0
 
 @onready var _anim: AnimationPlayer = $AnimationPlayer
-@onready var _attack_hitbox: PlayerAttackHitbox = $Interactions/HurtBox
+@onready var _attack_hitbox: PlayerAttackHitbox = $Interactions/AttackBox
 @onready var _sprite: Sprite2D = $PlayerSprite
 @onready var _attack_sprite: Sprite2D = $PlayerSprite/AttackSprite
 @onready var _attack_sprite_anim: AnimationPlayer = $PlayerSprite/AttackSprite/AnimationPlayer
@@ -17,8 +18,8 @@ const MOVE_ANIM_EPS2: float = 4.0
 ## Last facing for idle: "up", "down", or "side" (left/right via flip_h).
 var _face: String = "down"
 var _face_side_is_left: bool = false
-## While attacking from movement, hurtbox uses this direction (full diagonal). Cleared when attack FX ends.
-var _hurtbox_dir_override: Vector2 = Vector2.ZERO
+## While attacking from movement, [method get_attack_aim_direction] uses this (full diagonal). Cleared when attack FX ends.
+var _attack_aim_override: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -82,10 +83,10 @@ func _refresh_locomotion_animation() -> void:
 func play_attack_animation(velocity_snapshot: Vector2 = Vector2.ZERO) -> void:
 	if velocity_snapshot.length_squared() > MOVE_ANIM_EPS2:
 		_set_face_from_velocity(velocity_snapshot)
-		_hurtbox_dir_override = velocity_snapshot.normalized()
+		_attack_aim_override = velocity_snapshot.normalized()
 	else:
 		_set_face_from_cursor()
-		_hurtbox_dir_override = Vector2.ZERO
+		_attack_aim_override = Vector2.ZERO
 
 	var clip := StringName("attack_" + _face)
 	if _face == "side":
@@ -110,7 +111,7 @@ func hide_attack_fx() -> void:
 	_attack_sprite.frame = 0
 	_attack_sprite.visible = false
 	_attack_sprite.hide()
-	_hurtbox_dir_override = Vector2.ZERO
+	_attack_aim_override = Vector2.ZERO
 
 
 func _set_face_from_velocity(v: Vector2) -> void:
@@ -149,9 +150,9 @@ func is_facing_side_left() -> bool:
 	return _face_side_is_left
 
 
-func get_hurtbox_direction() -> Vector2:
-	if _hurtbox_dir_override.length_squared() > 0.0001:
-		return _hurtbox_dir_override
+func get_attack_aim_direction() -> Vector2:
+	if _attack_aim_override.length_squared() > 0.0001:
+		return _attack_aim_override
 	if velocity.length_squared() > MOVE_ANIM_EPS2:
 		return velocity.normalized()
 	var to_mouse := get_global_mouse_position() - global_position

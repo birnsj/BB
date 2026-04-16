@@ -1,32 +1,21 @@
 class_name PlayerHurtBox
 extends Area2D
 
-const ENEMY_ATTACK_PHYSICS_LAYER: int = 256
-
 var _player: CharacterBody2D
 var _enemy_attack_overlapping: bool = false
 
 
 func _ready() -> void:
-	_player = _resolve_player()
+	_player = PlayerAreaUtils.character_from_area_parent(self)
 
 
 func _physics_process(_delta: float) -> void:
 	_resolve_enemy_hits()
 
 
-func _resolve_player() -> CharacterBody2D:
-	var p := get_parent()
-	if p is CharacterBody2D:
-		return p as CharacterBody2D
-	if p:
-		return p.get_parent() as CharacterBody2D
-	return null
-
-
 func _resolve_enemy_hits() -> void:
 	if _player == null:
-		_player = _resolve_player()
+		_player = PlayerAreaUtils.character_from_area_parent(self)
 	if _player == null:
 		return
 
@@ -39,7 +28,7 @@ func _resolve_enemy_hits() -> void:
 	params.transform = cs.global_transform
 	params.collide_with_areas = true
 	params.collide_with_bodies = false
-	params.collision_mask = ENEMY_ATTACK_PHYSICS_LAYER
+	params.collision_mask = collision_mask
 	var space := get_world_2d().direct_space_state
 	var hits: Array = space.intersect_shape(params, 16)
 	var touching := not hits.is_empty()
