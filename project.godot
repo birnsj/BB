@@ -15,6 +15,11 @@ run/main_scene="uid://b2lpg5idlcjxq"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+CharacterTunerOverlay="*res://UI/character_tuner_overlay.tscn"
+DebugCollisionToggle="*res://Scripts/debug_collision_toggle.gd"
+
 [display]
 
 window/size/viewport_width=480
@@ -26,11 +31,6 @@ window/stretch/mode="viewport"
 [dotnet]
 
 project/assembly_name="BloodBound"
-
-[autoload]
-
-CharacterTunerOverlay="*res://UI/character_tuner_overlay.tscn"
-DebugCollisionToggle="*res://Scripts/debug_collision_toggle.gd"
 
 [input]
 
@@ -86,7 +86,8 @@ camera_recenter={
 }
 character_tuner_toggle={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194314,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null), Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194321,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194314,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194321,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
 debug_collision_shapes={
@@ -100,6 +101,7 @@ debug_collision_shapes={
 2d_physics/layer_1="Player"
 2d_physics/layer_2="PlayerHurt"
 2d_physics/layer_3="PropsInteract"
+2d_physics/layer_6="SolidActor"
 2d_physics/layer_5="Walls"
 2d_physics/layer_9="Enemy"
 

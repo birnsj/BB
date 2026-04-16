@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://ba88c7tqe10xk"]
+
+[ext_resource type="PackedScene" uid="uid://bxoayr0xwebvi" path="res://Player/player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://d4k2m8vqx7npc" path="res://Player/Scripts/visual_npc.gd" id="2_visual_npc"]
+
+[node name="VisualNpc" instance=ExtResource("1_player")]
+collision_layer = 32
+collision_mask = 17
+script = ExtResource("2_visual_npc")
