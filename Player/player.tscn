@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://c6r7i58dlooss" path="res://Player/Scripts/states/attack.gd" id="8_attack"]
 [ext_resource type="AudioStream" uid="uid://dgqyanxf0r7sy" path="res://Player/Audio/SwordSwoosh.wav" id="9_sword"]
 [ext_resource type="PackedScene" uid="uid://cqoh3e8edhfsv" path="res://GeneralNodes/HurtBox/hurt_box.tscn" id="12_5htga"]
+[ext_resource type="Script" uid="uid://0r6aeic3wtc4" path="res://Player/Scripts/PlayerInteractionHost.gd" id="13_ixhost"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_edjgo"]
 
@@ -427,7 +428,7 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_atk"]
-size = Vector2(32, 24)
+size = Vector2(40, 44)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_p5o4e"]
 
@@ -500,18 +501,23 @@ text = "State: idle"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=598452779]
 
-[node name="AttackHitBox" type="Area2D" parent="." unique_id=2100000001]
+[node name="HitBox" type="Area2D" parent="." unique_id=2100000001]
 collision_layer = 0
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitBox" unique_id=2100000002]
-position = Vector2(0, -10)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox" unique_id=2100000002]
+position = Vector2(0, -22)
 shape = SubResource("RectangleShape2D_atk")
 
-[node name="HurtBox" parent="." unique_id=2117206928 instance=ExtResource("12_5htga")]
-collision_mask = 256
+[node name="Interactions" type="Node2D" parent="." unique_id=2021529585]
+script = ExtResource("13_ixhost")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1363667803]
+[node name="HurtBox" parent="Interactions" unique_id=2117206928 instance=ExtResource("12_5htga")]
+collision_mask = 256
+monitorable = true
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactions/HurtBox" unique_id=1363667803]
 scale = Vector2(2, 2)
 shape = SubResource("CircleShape2D_p5o4e")
 debug_color = Color(0.9979289, 0, 0.16526431, 0.41960785)

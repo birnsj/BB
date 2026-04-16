@@ -5,6 +5,7 @@ var _sword_sfx: AudioStreamPlayer
 
 
 func enter(_payload: Variant = null) -> void:
+	var velocity_snapshot := player.velocity
 	player.velocity = Vector2.ZERO
 	if _sword_sfx == null:
 		_sword_sfx = player.get_node_or_null("SwordSwoosh") as AudioStreamPlayer
@@ -14,7 +15,7 @@ func enter(_payload: Variant = null) -> void:
 	if not anim_player.is_connected("animation_finished", on_finished):
 		anim_player.connect("animation_finished", on_finished)
 	_play_swing_sound()
-	player.call("play_attack_animation")
+	player.call("play_attack_animation", velocity_snapshot)
 
 
 func exit() -> void:
