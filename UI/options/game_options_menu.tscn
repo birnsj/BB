@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8optionsmenu01"]
+
+[ext_resource type="Script" path="res://UI/options/game_options_menu.gd" id="1_script"]
+
+[node name="GameOptionsMenu" type="PanelContainer"]
+anchors_preset = 0
+offset_right = 304.0
+offset_bottom = 260.0
+mouse_filter = 0
+script = ExtResource("1_script")

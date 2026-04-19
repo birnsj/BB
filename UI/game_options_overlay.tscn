@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cq3dwbky2fucg"]
+
+[ext_resource type="Script" path="res://UI/game_options_overlay.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c8optionsmenu01" path="res://UI/options/game_options_menu.tscn" id="2_menu"]
+
+[node name="GameOptionsOverlay" type="CanvasLayer"]
+layer = 118
+script = ExtResource("1_script")
+
+[node name="GameOptionsMenu" parent="." instance=ExtResource("2_menu")]
+visible = false
+mouse_filter = 2
